@@ -1,0 +1,207 @@
+package tinyfs_client
+
+
+import (
+	"errors"
+	"fmt"
+	"github.com/andyzhou/tinyfs_client/define"
+	"github.com/andyzhou/tinyfs_client/json"
+	"sync"
+	"sync/atomic"
+)
+
+/*
+ * client for master service
+ */
+
+//global variable
+var (
+	_client *Client
+	_clientOnce sync.Once
+)
+
+//face info
+type Client struct {
+	node *Node
+	addressArr []string //unique slice
+	num int32 //atomic value
+	sync.RWMutex
+}
+
+//single instance
+func GetClient() *Client {
+	_clientOnce.Do(func() {
+		_client = NewClient()
+	})
+	return _client
+}
+
+//construct
+func NewClient() *Client {
+	this := &Client{
+		node: NewNode(),
+	}
+	return this
+}
+
+//del file info
+func (f *Client) DelFile(
+		shortUrl string) error {
+	//check
+	if shortUrl == "" {
+		return errors.New("invalid parameter")
+	}
+
+	//pick rand master node
+	node, err := f.node.PickNode()
+	if err != nil {
+		return err
+	}
+	if node == nil || node.Client == nil {
+		return errors.New("can't get valid node")
+	}
+
+	//init del file request
+	reqObj := json.NewDelFileReqJson()
+	reqObj.ShortUrl = shortUrl
+
+	//encode request obj
+	reqBytes, err := reqObj.Encode(reqObj)
+	if err != nil {
+		return err
+	}
+
+	//gen packet
+	pack := node.Client.GenPacket()
+	pack.MessageId = define.MessageIdOfRead
+	pack.Data = reqBytes
+
+	//send request to target node
+	resp, err := node.Client.SendRequest(pack)
+	if err != nil {
+		return err
+	}
+	if resp.ErrCode != define.ErrCodeOfSucceed {
+		subErr := fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		return subErr
+	}
+	return nil
+}
+
+//read file data
+func (f *Client) ReadFile(
+			req *json.ReadFileReqJson,
+		) (*json.ReadFileRespJson, error) {
+	//check
+	if req == nil || req.ShortUrl == "" {
+		return nil, errors.New("invalid parameter")
+	}
+
+	//pick active node
+	node, err := f.node.PickNode()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil || node.Client == nil {
+		return nil, errors.New("node client not init")
+	}
+	reqBytes, _ := req.Encode(req)
+
+	//gen packet
+	pack := node.Client.GenPacket()
+	pack.MessageId = define.MessageIdOfRead
+	pack.Data = reqBytes
+
+	//send request to target node
+	resp, err := node.Client.SendRequest(pack)
+	if err != nil {
+		return nil, err
+	}
+	if resp.ErrCode != define.ErrCodeOfSucceed {
+		subErr := fmt.Errorf("read file failed, code:%v, err:%v\n",
+			resp.ErrCode, resp.ErrMsg)
+		return nil, subErr
+	}
+
+	//decode origin resp
+	respObj := json.NewReadFileRespJson()
+	respObj.Decode(resp.Data, respObj)
+	return respObj, nil
+}
+
+//write file data
+func (f *Client) WriteFile(
+			req *json.WriteFileReqJson,
+		) (*json.WriteFileRespJson, error) {
+	//check
+	if req == nil || req.Name == "" || req.Data == nil {
+		return nil, errors.New("invalid parameter")
+	}
+
+	//pick active node
+	node, err := f.node.PickNode()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil || node.Client == nil {
+		return nil, errors.New("node client not init")
+	}
+	reqBytes, _ := req.Encode(req)
+
+	//gen packet
+	pack := node.Client.GenPacket()
+	pack.MessageId = define.MessageIdOfWrite
+	pack.Data = reqBytes
+
+	//send request to target chunk node
+	resp, err := node.Client.SendRequest(pack)
+	if err != nil {
+		return nil, err
+	}
+	if resp.ErrCode != define.ErrCodeOfSucceed {
+		subErr := fmt.Errorf("send file failed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		return nil, subErr
+	}
+
+	//decode origin response data
+	respObj := json.NewWriteFileRespJson()
+	respObj.Decode(resp.Data, respObj)
+	return respObj, nil
+}
+
+//get sub face
+func (f *Client) GetNode() *Node {
+	return f.node
+}
+
+//add node
+func (f *Client) AddNode(addr string) error {
+	//check
+	if addr == "" {
+		return errors.New("invalid parameter")
+	}
+	if f.checkAddress(addr) {
+		return errors.New("address had exists")
+	}
+	//add new node
+	tag := fmt.Sprintf("%v", f.num)
+	f.node.AddNode(tag, addr)
+	atomic.AddInt32(&f.num, 1)
+	return nil
+}
+
+///////////////
+//private func
+///////////////
+
+//check address
+func (f *Client) checkAddress(addr string) bool {
+	f.Lock()
+	defer f.Unlock()
+	for _, v := range f.addressArr {
+		if v == addr {
+			return true
+		}
+	}
+	return false
+}
