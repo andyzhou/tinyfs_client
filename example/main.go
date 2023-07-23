@@ -77,9 +77,9 @@ func main() {
 	wg.Add(1)
 
 	//send request
-	//writeReq(client)
+	writeReq(client)
 	//readReq(client)
-	delReq(client)
+	//delReq(client)
 
 	wg.Wait()
 }

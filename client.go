@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/andyzhou/tinyfs_client/define"
+	"github.com/andyzhou/tinyfs_client/face"
 	"github.com/andyzhou/tinyfs_client/json"
 	"sync"
 	"sync/atomic"
@@ -22,7 +23,7 @@ var (
 
 //face info
 type Client struct {
-	node *Node
+	node *face.Node
 	addressArr []string //unique slice
 	num int32 //atomic value
 	sync.RWMutex
@@ -39,7 +40,7 @@ func GetClient() *Client {
 //construct
 func NewClient() *Client {
 	this := &Client{
-		node: NewNode(),
+		node: face.NewNode(),
 	}
 	return this
 }
@@ -170,7 +171,7 @@ func (f *Client) WriteFile(
 }
 
 //get sub face
-func (f *Client) GetNode() *Node {
+func (f *Client) GetNode() *face.Node {
 	return f.node
 }
 

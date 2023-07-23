@@ -1,4 +1,4 @@
-package tinyfs_client
+package face
 
 
 import (
