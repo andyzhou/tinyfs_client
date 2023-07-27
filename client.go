@@ -46,10 +46,9 @@ func NewClient() *Client {
 }
 
 //del file info
-func (f *Client) DelFile(
-		shortUrl string) error {
+func (f *Client) DelFile(shortUrls ...string) error {
 	//check
-	if shortUrl == "" {
+	if shortUrls == nil || len(shortUrls) <= 0 {
 		return errors.New("invalid parameter")
 	}
 
@@ -64,7 +63,7 @@ func (f *Client) DelFile(
 
 	//init del file request
 	reqObj := json.NewDelFileReqJson()
-	reqObj.ShortUrl = shortUrl
+	reqObj.ShortUrls = shortUrls
 
 	//encode request obj
 	reqBytes, err := reqObj.Encode(reqObj)
@@ -90,6 +89,45 @@ func (f *Client) DelFile(
 }
 
 //read file data
+func (f *Client) ReadMultiFiles(
+			req *json.ReadMultiFilesReqJson,
+		) (*json.ReadMultiFilesRespJson, error) {
+	//check
+	if req == nil || req.ShortUrls == nil || len(req.ShortUrls) <= 0 {
+		return nil, errors.New("invalid parameter")
+	}
+	//pick active master node
+	node, err := f.node.PickNode()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil || node.Client == nil {
+		return nil, errors.New("node client not init")
+	}
+	reqBytes, _ := req.Encode(req)
+
+	//gen packet
+	pack := node.Client.GenPacket()
+	pack.MessageId = define.MessageIdOfMultiRead
+	pack.Data = reqBytes
+
+	//send request to target node
+	resp, err := node.Client.SendRequest(pack)
+	if err != nil {
+		return nil, err
+	}
+	if resp.ErrCode != define.ErrCodeOfSucceed {
+		subErr := fmt.Errorf("read multi file failed, code:%v, err:%v\n",
+			resp.ErrCode, resp.ErrMsg)
+		return nil, subErr
+	}
+
+	//decode origin resp
+	respObj := json.NewReadMultiFilesRespJson()
+	respObj.Decode(resp.Data, respObj)
+	return respObj, nil
+}
+
 func (f *Client) ReadFile(
 			req *json.ReadFileReqJson,
 		) (*json.ReadFileRespJson, error) {

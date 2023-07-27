@@ -6,7 +6,7 @@ package json
 
 //del file
 type DelFileReqJson struct {
-	ShortUrl string `json:"shortUrl"`
+	ShortUrls []string `json:"shortUrls"`
 	BaseJson
 }
 
@@ -26,6 +26,17 @@ type ReadFileRespJson struct {
 	BaseJson
 }
 
+//read multi files
+type ReadMultiFilesReqJson struct {
+	ShortUrls []string `json:"shortUrls"`
+	BaseJson
+}
+
+type ReadMultiFilesRespJson struct {
+	Files map[string]*ReadFileRespJson `json:"files"`
+	BaseJson
+}
+
 //write file
 type WriteFileReqJson struct {
 	Name string `json:"name"`
@@ -42,7 +53,9 @@ type WriteFileRespJson struct {
 
 //construct
 func NewDelFileReqJson() *DelFileReqJson {
-	this := &DelFileReqJson{}
+	this := &DelFileReqJson{
+		ShortUrls: []string{},
+	}
 	return this
 }
 
@@ -62,6 +75,19 @@ func NewReadFileReqJson() *ReadFileReqJson {
 func NewReadFileRespJson() *ReadFileRespJson {
 	this := &ReadFileRespJson{
 		Data: []byte{},
+	}
+	return this
+}
+
+func NewReadMultiFilesReqJson() *ReadMultiFilesReqJson {
+	this := &ReadMultiFilesReqJson{
+		ShortUrls: []string{},
+	}
+	return this
+}
+func NewReadMultiFilesRespJson() *ReadMultiFilesRespJson {
+	this := &ReadMultiFilesRespJson{
+		Files: map[string]*ReadFileRespJson{},
 	}
 	return this
 }

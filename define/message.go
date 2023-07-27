@@ -6,4 +6,5 @@ const (
 	MessageIdOfRead
 	MessageIdOfWrite
 	MessageIdOfRemove
+	MessageIdOfMultiRead
 )
