@@ -4,8 +4,25 @@ package json
  * file request json
  */
 
-//del file
-type DelFileReqJson struct {
+//list files
+type ListFileReqJson struct {
+	Page int `json:"page"`
+	PageSize int `json:"pageSize"`
+	BaseJson
+}
+type ListFileRespJson struct {
+	List []*FileInfo `json:"list"`
+	BaseJson
+}
+
+//delete files data
+type DeleteFileReqJson struct {
+	ShortUrls []string `json:"shortUrls"`
+	BaseJson
+}
+
+//remove files info
+type RemoveFileReqJson struct {
 	ShortUrls []string `json:"shortUrls"`
 	BaseJson
 }
@@ -52,8 +69,26 @@ type WriteFileRespJson struct {
 }
 
 //construct
-func NewDelFileReqJson() *DelFileReqJson {
-	this := &DelFileReqJson{
+func NewListFileReqJson() *ListFileReqJson {
+	this := &ListFileReqJson{
+	}
+	return this
+}
+func NewListFileRespJson() *ListFileRespJson {
+	this := &ListFileRespJson{
+		List: []*FileInfo{},
+	}
+	return this
+}
+
+func NewDeleteFileReqJson() *DeleteFileReqJson {
+	this := &DeleteFileReqJson{
+		ShortUrls: []string{},
+	}
+	return this
+}
+func NewRemoveFileReqJson() *RemoveFileReqJson {
+	this := &RemoveFileReqJson{
 		ShortUrls: []string{},
 	}
 	return this

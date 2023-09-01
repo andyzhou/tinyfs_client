@@ -18,12 +18,35 @@ var (
 	fileShortUrl = "sIxFt4"
 )
 
-//del file request
-func delReq(c *tinyfs_client.Client) {
-	//send del request
-	err := c.DelFile(fileShortUrl)
+//delete file data request
+func deleteReq(c *tinyfs_client.Client) {
+	//send delete request
+	err := c.DelFiles(fileShortUrl)
 	log.Println("err:", err)
 }
+
+//remove file info request
+func removeReq(c *tinyfs_client.Client) {
+	//send remove request
+	err := c.RemoveFiles(fileShortUrl)
+	log.Println("err:", err)
+}
+
+//list file info request
+func listFileReq(c *tinyfs_client.Client) {
+	//send list file request
+	page := 1
+	pageSize := 10
+	fileList, err := c.ListFiles(page, pageSize)
+	log.Printf("list file, err:%v\n", err)
+	if fileList != nil && fileList.List != nil {
+		for _, v := range fileList.List {
+			log.Printf("list file, shortUrl:%v, name:%v, size:%v\n",
+				v.ShortUrl, v.Name, v.Size)
+		}
+	}
+}
+
 
 //read file request
 func readReq(c *tinyfs_client.Client) {
@@ -77,9 +100,10 @@ func main() {
 	wg.Add(1)
 
 	//send request
-	writeReq(client)
+	//writeReq(client)
 	//readReq(client)
 	//delReq(client)
+	listFileReq(client)
 
 	wg.Wait()
 }

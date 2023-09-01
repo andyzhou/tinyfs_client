@@ -45,8 +45,51 @@ func NewClient() *Client {
 	return this
 }
 
+
+//list file info
+func (f *Client) ListFiles(page, pageSize int) (*json.ListFileRespJson, error) {
+	//pick rand master node
+	node, err := f.node.PickNode()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil || node.Client == nil {
+		return nil, errors.New("can't get valid node")
+	}
+
+	//init list file request
+	reqObj := json.NewListFileReqJson()
+	reqObj.Page = page
+	reqObj.PageSize = pageSize
+
+	//encode request obj
+	reqBytes, err := reqObj.Encode(reqObj)
+	if err != nil {
+		return nil, err
+	}
+
+	//gen packet
+	pack := node.Client.GenPacket()
+	pack.MessageId = define.MessageIdOfListFile
+	pack.Data = reqBytes
+
+	//send request to target node
+	resp, err := node.Client.SendRequest(pack)
+	if err != nil {
+		return nil, err
+	}
+	if resp.ErrCode != define.ErrCodeOfSucceed {
+		subErr := fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		return nil, subErr
+	}
+	//decode origin resp
+	respObj := json.NewListFileRespJson()
+	respObj.Decode(resp.Data, respObj)
+	return respObj, nil
+}
+
 //del file info
-func (f *Client) DelFile(shortUrls ...string) error {
+func (f *Client) DelFiles(shortUrls ...string) error {
 	//check
 	if shortUrls == nil || len(shortUrls) <= 0 {
 		return errors.New("invalid parameter")
@@ -61,8 +104,8 @@ func (f *Client) DelFile(shortUrls ...string) error {
 		return errors.New("can't get valid node")
 	}
 
-	//init del file request
-	reqObj := json.NewDelFileReqJson()
+	//init delete file request
+	reqObj := json.NewDeleteFileReqJson()
 	reqObj.ShortUrls = shortUrls
 
 	//encode request obj
@@ -73,7 +116,7 @@ func (f *Client) DelFile(shortUrls ...string) error {
 
 	//gen packet
 	pack := node.Client.GenPacket()
-	pack.MessageId = define.MessageIdOfRead
+	pack.MessageId = define.MessageIdOfDelete
 	pack.Data = reqBytes
 
 	//send request to target node
@@ -83,6 +126,49 @@ func (f *Client) DelFile(shortUrls ...string) error {
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
 		subErr := fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		return subErr
+	}
+	return nil
+}
+
+//remove file info
+func (f *Client) RemoveFiles(shortUrls ...string) error {
+	//check
+	if shortUrls == nil || len(shortUrls) <= 0 {
+		return errors.New("invalid parameter")
+	}
+
+	//pick rand master node
+	node, err := f.node.PickNode()
+	if err != nil {
+		return err
+	}
+	if node == nil || node.Client == nil {
+		return errors.New("can't get valid node")
+	}
+
+	//init remove file request
+	reqObj := json.NewRemoveFileReqJson()
+	reqObj.ShortUrls = shortUrls
+
+	//encode request obj
+	reqBytes, err := reqObj.Encode(reqObj)
+	if err != nil {
+		return err
+	}
+
+	//gen packet
+	pack := node.Client.GenPacket()
+	pack.MessageId = define.MessageIdOfRemove
+	pack.Data = reqBytes
+
+	//send request to target master node
+	resp, err := node.Client.SendRequest(pack)
+	if err != nil {
+		return err
+	}
+	if resp.ErrCode != define.ErrCodeOfSucceed {
+		subErr := fmt.Errorf("remove file failed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
 		return subErr
 	}
 	return nil

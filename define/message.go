@@ -4,7 +4,9 @@ package define
 const (
 	MessageIdOfNone = iota
 	MessageIdOfRead
+	MessageIdOfMultiRead
 	MessageIdOfWrite
 	MessageIdOfRemove
-	MessageIdOfMultiRead
+	MessageIdOfDelete
+	MessageIdOfListFile
 )
