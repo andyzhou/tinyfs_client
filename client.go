@@ -300,7 +300,7 @@ func (f *Client) GetNode() *face.Node {
 }
 
 //add node
-func (f *Client) AddNode(addr string) error {
+func (f *Client) AddNode(addr string, maxMsgSizes ...int) error {
 	//check
 	if addr == "" {
 		return errors.New("invalid parameter")
@@ -310,7 +310,7 @@ func (f *Client) AddNode(addr string) error {
 	}
 	//add new node
 	tag := fmt.Sprintf("%v", f.num)
-	f.node.AddNode(tag, addr)
+	f.node.AddNode(tag, addr, maxMsgSizes...)
 	atomic.AddInt32(&f.num, 1)
 	return nil
 }

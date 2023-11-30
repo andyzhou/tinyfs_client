@@ -12,6 +12,9 @@ import (
 /*
  * general node face
  */
+const (
+	DefaultMaxMsgSize = 1024 * 1024 * 10 //10MB
+)
 
 //one node info
 type OneNode struct {
@@ -128,7 +131,10 @@ func (f *Node) PickNode() (*OneNode, error) {
 }
 
 //add node
-func (f *Node) AddNode(tag, address string) error {
+func (f *Node) AddNode(tag, address string, maxMsgSizes ...int) error {
+	var (
+		maxMsgSize int
+	)
 	//check
 	if tag == "" || address == "" {
 		return errors.New("invalid parameter")
@@ -137,8 +143,22 @@ func (f *Node) AddNode(tag, address string) error {
 	if v != nil {
 		return nil
 	}
+
+	//detect
+	if maxMsgSizes != nil && len(maxMsgSizes) > 0 {
+		maxMsgSize = maxMsgSizes[0]
+	}
+	if maxMsgSize <= 0 {
+		maxMsgSize = DefaultMaxMsgSize
+	}
+
+	//get client para
+	clientPara := &tinyrpc.ClientPara{
+		MaxMsgSize: maxMsgSize,
+	}
+
 	//init new client
-	client := tinyrpc.NewClient()
+	client := tinyrpc.NewClient(clientPara)
 	client.SetAddress(address)
 	err := client.ConnectServer()
 	if err != nil {
