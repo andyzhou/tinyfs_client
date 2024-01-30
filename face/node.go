@@ -4,9 +4,11 @@ package face
 import (
 	"errors"
 	"github.com/andyzhou/tinyrpc"
+	"log"
 	"math/rand"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 /*
@@ -14,6 +16,7 @@ import (
  */
 const (
 	DefaultMaxMsgSize = 1024 * 1024 * 10 //10MB
+	DefaultNodeConnDelaySeconds = 5 //xx seconds
 )
 
 //one node info
@@ -160,6 +163,9 @@ func (f *Node) AddNode(tag, address string, maxMsgSizes ...int) error {
 	//init new client
 	client := tinyrpc.NewClient(clientPara)
 	client.SetAddress(address)
+	client.SetServerNodeDownCallBack(f.cbForServerNodeDown)
+
+	//connect server
 	err := client.ConnectServer()
 	if err != nil {
 		return err
@@ -180,4 +186,98 @@ func (f *Node) AddNode(tag, address string, maxMsgSizes ...int) error {
 	defer f.Unlock()
 	f.tags = append(f.tags, tag)
 	return nil
+}
+
+////////////////
+//private func
+////////////////
+
+//cb for server node down
+func (f *Node) cbForServerNodeDown(serverAddr string) error {
+	//check
+	if serverAddr == "" {
+		return errors.New("invalid parameter")
+	}
+
+	//try re-connect server in son process
+	sf := func() {
+		rpcNode, _ := f.getNodeByAddr(serverAddr)
+		if rpcNode != nil {
+			//force close rpc client
+			if rpcNode.Client != nil {
+				rpcNode.Client.Quit()
+			}
+			//re-connect target server force
+			//run in son process
+			go f.reConnectDownedServerNode(rpcNode)
+		}
+	}
+	sf()
+	return nil
+}
+
+//re-connect downed server node
+func (f *Node) reConnectDownedServerNode(serverNode *OneNode) error {
+	var (
+		finalClient *tinyrpc.Client
+	)
+	//check
+	if serverNode == nil || serverNode.Address == "" {
+		return errors.New("invalid parameter")
+	}
+
+	//get key data
+	nodeAddr := serverNode.Address
+
+	//loop connect server
+	for {
+		//init new rpc client
+		newClient := tinyrpc.NewClient()
+		err := newClient.SetAddress(nodeAddr)
+		newClient.SetServerNodeDownCallBack(f.cbForServerNodeDown)
+
+		//connect server
+		err = newClient.ConnectServer()
+		if err != nil {
+			log.Printf("connect rpc server %v failed, err:%v\n", nodeAddr, err.Error())
+			newClient.Quit()
+			time.Sleep(time.Second * DefaultNodeConnDelaySeconds)
+		}else{
+			//connect success
+			log.Printf("connect rpc server %v success..\n", nodeAddr)
+			finalClient = newClient
+			break
+		}
+	}
+
+	//update active client
+	serverNode.Client = finalClient
+	f.nodeMap.Store(serverNode.Tag, serverNode)
+	return nil
+}
+
+//get node by address
+func (f *Node) getNodeByAddr(addr string) (*OneNode, error) {
+	var (
+		target *OneNode
+	)
+	//check
+	if addr == "" {
+		return nil, errors.New("invalid parameter")
+	}
+	//loop check
+	sf := func(k, v interface{}) bool {
+		tag, _ := k.(string)
+		obj, _ := v.(*OneNode)
+		if tag != "" && obj != nil {
+			if obj.Address == addr {
+				//found it
+				target = obj
+				return false
+			}
+		}
+		return true
+	}
+	f.nodeMap.Range(sf)
+	return target, nil
 }

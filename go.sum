@@ -4,6 +4,8 @@ github.com/andyzhou/tinyrpc v0.0.0-20230720134411-f10766e88f2f h1:lPVpYMO1cnEQIo
 github.com/andyzhou/tinyrpc v0.0.0-20230720134411-f10766e88f2f/go.mod h1:ow1PIMGjwb7zNo74viw9vKJX4QUAyGmfabM2XXkNtgU=
 github.com/andyzhou/tinyrpc v0.0.0-20231130112732-6e0ec40c1ef0 h1:NV/cnCE3mSrTvHMWS1Dwq5UEoPo8m00R+5qHkcOjNXQ=
 github.com/andyzhou/tinyrpc v0.0.0-20231130112732-6e0ec40c1ef0/go.mod h1:ow1PIMGjwb7zNo74viw9vKJX4QUAyGmfabM2XXkNtgU=
+github.com/andyzhou/tinyrpc v0.0.0-20240126145401-1f67b6618170 h1:9PN44RmbQkrrODJ0eKDXp36cG8WMKgXJN5Js+RvEyng=
+github.com/andyzhou/tinyrpc v0.0.0-20240126145401-1f67b6618170/go.mod h1:ow1PIMGjwb7zNo74viw9vKJX4QUAyGmfabM2XXkNtgU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
