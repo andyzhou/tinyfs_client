@@ -13,7 +13,7 @@ import (
  */
 
 var (
-	nodeAddr = "localhost:7100"
+	masterNodeAddr = "localhost:7100"
 	localFile = "./test.txt"
 	fileShortUrl = "sIxFt4"
 )
@@ -90,8 +90,8 @@ func main() {
 	//init client
 	client := tinyfs_client.NewClient()
 
-	//add  node
-	err := client.AddNode(nodeAddr)
+	//add master node
+	err := client.AddNode(masterNodeAddr)
 	if err != nil {
 		log.Println(err)
 		return

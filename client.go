@@ -1,6 +1,5 @@
 package tinyfs_client
 
-
 import (
 	"errors"
 	"fmt"
@@ -44,7 +43,6 @@ func NewClient() *Client {
 	}
 	return this
 }
-
 
 //list file info
 func (f *Client) ListFiles(page, pageSize int) (*json.ListFileRespJson, error) {
@@ -299,7 +297,24 @@ func (f *Client) GetNode() *face.Node {
 	return f.node
 }
 
-//add node
+//remove master node
+//addr format -> host:port
+func (f *Client) RemoveNode(addr string) error {
+	//check
+	if addr == "" {
+		return errors.New("invalid parameter")
+	}
+	nodeObj, _ := f.node.GetNodeByAddr(addr)
+	if nodeObj == nil {
+		return errors.New("address not exists")
+	}
+	//remove node
+	err := f.node.DelNode(nodeObj.Tag)
+	return err
+}
+
+//add master node
+//addr format -> host:port
 func (f *Client) AddNode(addr string, maxMsgSizes ...int) error {
 	//check
 	if addr == "" {
