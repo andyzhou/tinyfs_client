@@ -44,6 +44,11 @@ func NewClient() *Client {
 	return this
 }
 
+//quit
+func (f *Client) Quit() {
+	f.node.Quit()
+}
+
 //list file info
 func (f *Client) ListFiles(page, pageSize int) (*json.ListFileRespJson, error) {
 	//pick rand master node
