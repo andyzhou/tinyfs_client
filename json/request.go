@@ -31,7 +31,7 @@ type RemoveFileReqJson struct {
 type ReadFileReqJson struct {
 	ShortUrl string `json:"shortUrl"`
 	Start int64 `json:"start"`
-	Size int64 `json:"size"`
+	End int64 `json:"end"`
 	BaseJson
 }
 
