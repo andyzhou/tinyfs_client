@@ -6,7 +6,7 @@ package json
 
 //list files
 type ListFileReqJson struct {
-	Page int `json:"page"`
+	Page     int `json:"page"`
 	PageSize int `json:"pageSize"`
 	BaseJson
 }
@@ -30,15 +30,15 @@ type RemoveFileReqJson struct {
 //read file
 type ReadFileReqJson struct {
 	ShortUrl string `json:"shortUrl"`
-	Start int64 `json:"start"`
-	End int64 `json:"end"`
+	Start    int64  `json:"start"`
+	End      int64  `json:"end"`
 	BaseJson
 }
 
 type ReadFileRespJson struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
-	Size int64 `json:"size"`
+	Size int64  `json:"size"`
 	Data []byte `json:"data"`
 	BaseJson
 }
@@ -58,7 +58,7 @@ type ReadMultiFilesRespJson struct {
 type WriteFileReqJson struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
-	Size int64 `json:"size"`
+	Size int64  `json:"size"`
 	Data []byte `json:"data"`
 	BaseJson
 }

@@ -2,7 +2,7 @@ module github.com/andyzhou/tinyfs_client
 
 go 1.19
 
-require github.com/andyzhou/tinyrpc v0.0.0-20240126145401-1f67b6618170
+require github.com/andyzhou/tinyrpc v0.0.0-20240718105036-a437b7121630
 
 require (
 	github.com/golang/protobuf v1.4.1 // indirect

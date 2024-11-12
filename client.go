@@ -66,9 +66,9 @@ func (f *Client) ListFiles(page, pageSize int) (*json.ListFileRespJson, error) {
 	reqObj.PageSize = pageSize
 
 	//encode request obj
-	reqBytes, err := reqObj.Encode(reqObj)
-	if err != nil {
-		return nil, err
+	reqBytes, subErr := reqObj.Encode(reqObj)
+	if subErr != nil {
+		return nil, subErr
 	}
 
 	//gen packet
@@ -77,12 +77,12 @@ func (f *Client) ListFiles(page, pageSize int) (*json.ListFileRespJson, error) {
 	pack.Data = reqBytes
 
 	//send request to target node
-	resp, err := node.Client.SendRequest(pack)
-	if err != nil {
-		return nil, err
+	resp, subErrTwo := node.Client.SendRequest(pack)
+	if subErrTwo != nil {
+		return nil, subErrTwo
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
-		subErr := fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		subErr = fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
 		return nil, subErr
 	}
 	//decode origin resp
@@ -112,9 +112,9 @@ func (f *Client) DelFiles(shortUrls ...string) error {
 	reqObj.ShortUrls = shortUrls
 
 	//encode request obj
-	reqBytes, err := reqObj.Encode(reqObj)
-	if err != nil {
-		return err
+	reqBytes, subErrTwo := reqObj.Encode(reqObj)
+	if subErrTwo != nil {
+		return subErrTwo
 	}
 
 	//gen packet
@@ -123,12 +123,12 @@ func (f *Client) DelFiles(shortUrls ...string) error {
 	pack.Data = reqBytes
 
 	//send request to target node
-	resp, err := node.Client.SendRequest(pack)
-	if err != nil {
-		return err
+	resp, subErr := node.Client.SendRequest(pack)
+	if subErr != nil {
+		return subErr
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
-		subErr := fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		subErr = fmt.Errorf("read file fialed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
 		return subErr
 	}
 	return nil
@@ -155,9 +155,9 @@ func (f *Client) RemoveFiles(shortUrls ...string) error {
 	reqObj.ShortUrls = shortUrls
 
 	//encode request obj
-	reqBytes, err := reqObj.Encode(reqObj)
-	if err != nil {
-		return err
+	reqBytes, subErr := reqObj.Encode(reqObj)
+	if subErr != nil {
+		return subErr
 	}
 
 	//gen packet
@@ -166,12 +166,12 @@ func (f *Client) RemoveFiles(shortUrls ...string) error {
 	pack.Data = reqBytes
 
 	//send request to target master node
-	resp, err := node.Client.SendRequest(pack)
-	if err != nil {
-		return err
+	resp, subErrTwo := node.Client.SendRequest(pack)
+	if subErrTwo != nil {
+		return subErrTwo
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
-		subErr := fmt.Errorf("remove file failed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		subErr = fmt.Errorf("remove file failed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
 		return subErr
 	}
 	return nil
@@ -179,8 +179,8 @@ func (f *Client) RemoveFiles(shortUrls ...string) error {
 
 //read file data
 func (f *Client) ReadMultiFiles(
-			req *json.ReadMultiFilesReqJson,
-		) (*json.ReadMultiFilesRespJson, error) {
+		req *json.ReadMultiFilesReqJson,
+	) (*json.ReadMultiFilesRespJson, error) {
 	//check
 	if req == nil || req.ShortUrls == nil || len(req.ShortUrls) <= 0 {
 		return nil, errors.New("invalid parameter")
@@ -201,12 +201,12 @@ func (f *Client) ReadMultiFiles(
 	pack.Data = reqBytes
 
 	//send request to target node
-	resp, err := node.Client.SendRequest(pack)
-	if err != nil {
-		return nil, err
+	resp, subErr := node.Client.SendRequest(pack)
+	if subErr != nil {
+		return nil, subErr
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
-		subErr := fmt.Errorf("read multi file failed, code:%v, err:%v\n",
+		subErr = fmt.Errorf("read multi file failed, code:%v, err:%v\n",
 			resp.ErrCode, resp.ErrMsg)
 		return nil, subErr
 	}
@@ -218,8 +218,8 @@ func (f *Client) ReadMultiFiles(
 }
 
 func (f *Client) ReadFile(
-			req *json.ReadFileReqJson,
-		) (*json.ReadFileRespJson, error) {
+		req *json.ReadFileReqJson,
+	) (*json.ReadFileRespJson, error) {
 	//check
 	if req == nil || req.ShortUrl == "" {
 		return nil, errors.New("invalid parameter")
@@ -241,12 +241,12 @@ func (f *Client) ReadFile(
 	pack.Data = reqBytes
 
 	//send request to target node
-	resp, err := node.Client.SendRequest(pack)
-	if err != nil {
-		return nil, err
+	resp, subErr := node.Client.SendRequest(pack)
+	if subErr != nil {
+		return nil, subErr
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
-		subErr := fmt.Errorf("read file failed, code:%v, err:%v\n",
+		subErr = fmt.Errorf("read file failed, code:%v, err:%v\n",
 			resp.ErrCode, resp.ErrMsg)
 		return nil, subErr
 	}
@@ -259,8 +259,8 @@ func (f *Client) ReadFile(
 
 //write file data
 func (f *Client) WriteFile(
-			req *json.WriteFileReqJson,
-		) (*json.WriteFileRespJson, error) {
+		req *json.WriteFileReqJson,
+	) (*json.WriteFileRespJson, error) {
 	//check
 	if req == nil || req.Name == "" || req.Data == nil {
 		return nil, errors.New("invalid parameter")
@@ -282,12 +282,12 @@ func (f *Client) WriteFile(
 	pack.Data = reqBytes
 
 	//send request to target chunk node
-	resp, err := node.Client.SendRequest(pack)
-	if err != nil {
-		return nil, err
+	resp, subErr := node.Client.SendRequest(pack)
+	if subErr != nil {
+		return nil, subErr
 	}
 	if resp.ErrCode != define.ErrCodeOfSucceed {
-		subErr := fmt.Errorf("send file failed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
+		subErr = fmt.Errorf("send file failed, code:%v, err:%v\n", resp.ErrCode, resp.ErrMsg)
 		return nil, subErr
 	}
 
